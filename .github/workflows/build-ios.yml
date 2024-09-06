@@ -15,9 +15,8 @@ jobs:
     - name: Install Flutter Action
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.5.2'  # Specify the exact Flutter version
-        channel: 'master'  # Switch to master channel to use latest version
-        architecture: 'x64'  # Ensure it's compatible with x64 architecture
+        channel: 'stable'  # Automatically uses the latest stable version of Flutter
+        architecture: 'x64'  # Ensures it's compatible with x64 architecture
 
     - name: Install dependencies
       run: flutter pub get
