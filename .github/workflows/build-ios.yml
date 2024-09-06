@@ -3,12 +3,11 @@ name: Build iOS App
 on:
   push:
     branches:
-      - main  # Adjust if you are using a different default branch
+      - main
 
 jobs:
   build:
-    runs-on: macos-latest  # Use a macOS runner for iOS builds
-
+    runs-on: macos-latest
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -16,7 +15,8 @@ jobs:
     - name: Set up Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.5.2'  # Use the Flutter version you need
+        flutter-version: '3.5.2'  # Specify the exact Flutter version
+        architecture: 'x64'  # Ensure the architecture is compatible with the GitHub runner
 
     - name: Install dependencies
       run: flutter pub get
