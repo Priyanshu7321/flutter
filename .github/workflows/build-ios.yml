@@ -3,38 +3,71 @@ name: iOS-ipa-build
 on:
   workflow_dispatch:
 
+  # Grant write permission for repository contents
+
 jobs:
   build-ios:
     name: 🎉 iOS Build
     runs-on: macos-latest
     permissions:
-      contents: write  # Grant write access to contents, which allows creating releases
-
+      contents: write
     steps:
+      # Step 1: Checkout the repository
       - uses: actions/checkout@v3
 
+      # Step 2: Install Flutter using the flutter-action
       - uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
-          architecture: x64
+          channel: 'stable'  # Use stable Flutter channel
+          architecture: x64  # Specify architecture
 
+      # Step 3: Install dependencies for Flutter project
       - run: flutter pub get
 
-      - run: pod repo update
+      # Step 4: Check iOS directory structure (to make sure everything is in place)
+      - name: Check iOS directory structure
+        run: ls -alh ios
+
+      # Step 5: Install CocoaPods dependencies for iOS
+      - run: pod install
         working-directory: ios
 
-      - run: flutter build ios --release --no-codesign
+      # Step 6: Clean Flutter build directory (just in case)
+      - name: Clean Flutter build
+        run: flutter clean
 
+      # Step 7: Build the iOS app with verbose logging
+      - name: Build iOS app
+        run: flutter build ios --release --no-codesign --verbose
+
+      # Step 8: Check if the build folder exists in the root directory
+      - name: Check root directory for build output
+        run: ls -alh
+
+      # Check if Runner.app exists in build/ios/iphoneos
+      - name: Check for Runner.app
+        run: ls -alh build/ios/iphoneos
+
+      # Step 9: Create the Payload folder and move the .app file
       - run: mkdir Payload
         working-directory: build/ios/iphoneos
 
-      - run: mv Runner.app/ Payload
+      - run: mv Runner.app Payload/
         working-directory: build/ios/iphoneos
 
+      # Step 10: Zip the output to create an .ipa file
       - name: Zip output
-        run: zip -qq -r -9 FlutterIpaExport.ipa Payload
+        run: zip -qq -r FlutterIpaExport.ipa Payload
         working-directory: build/ios/iphoneos
 
+      # Step 11: Upload the IPA file as an artifact
+      - name: Upload IPA as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: FlutterIpaExport
+          path: build/ios/iphoneos/FlutterIpaExport.ipa
+
+      # Step 12: Upload binaries to GitHub release
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
